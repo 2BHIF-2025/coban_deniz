@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuizBattle</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- NAVBAR (versteckt bis Login) -->
+  <nav class="navbar" id="navbar" style="display: none;">
+    <h1>🤖 QuizBattle</h1>
+    <span id="navUser"></span>
+  </nav>
+
+  <!-- ========== LOGIN ========== -->
+  <div class="page active" id="loginPage">
+    <div class="logo">🤖 QuizBattle</div>
+    <p class="subtitle">Kämpfe gegen den Bot!</p>
+    <div class="card">
+      <label for="usernameInput">Dein Username</label>
+      <input type="text" id="usernameInput" placeholder="z.B. max99" maxlength="20" autocomplete="off" />
+      <button class="btn btn-primary" onclick="login()">Einloggen →</button>
+    </div>
+  </div>
+
+  <!-- ========== MENÜ ========== -->
+  <div class="page" id="menuPage">
+    <h2>Neues Spiel</h2>
+
+    <div class="section-label">1. Kategorie wählen</div>
+    <div class="category-grid" id="categoryGrid">
+      <!-- wird per JS gefüllt -->
+    </div>
+
+    <div class="section-label">2. Schwierigkeit wählen</div>
+    <div class="difficulty-row">
+      <button class="diff-btn diff-easy selected" onclick="selectDifficulty('easy', this)">
+        😊 Leicht<br><small>Bot 50%</small>
+      </button>
+      <button class="diff-btn diff-medium" onclick="selectDifficulty('medium', this)">
+        😤 Medium<br><small>Bot 60%</small>
+      </button>
+      <button class="diff-btn diff-hard" onclick="selectDifficulty('hard', this)">
+        💀 Schwer<br><small>Bot 80%</small>
+      </button>
+    </div>
+
+    <div class="menu-actions">
+      <button class="btn btn-primary" onclick="startGame()">▶ Starten</button>
+      <button class="btn btn-secondary" onclick="loadProfile()">👤 Profil</button>
+      <button class="btn btn-outline" onclick="showPage('uploadPage')">📂 Fragen</button>
+    </div>
+  </div>
+
+  <div class="page" id="gamePage">
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+    </div>
+
+    <div class="game-header">
+      <div class="score-box" id="playerScoreBox">
+        <div class="score-label">Du</div>
+        <div class="score-value score-player" id="playerScoreVal">0</div>
+      </div>
+
+      <div class="timer-box">
+        <div class="timer-number" id="timerNum">10</div>
+        <div class="timer-bar">
+          <div class="timer-fill" id="timerFill" style="width: 100%"></div>
+        </div>
+      </div>
+
+      <div class="score-box" id="botScoreBox">
+        <div class="score-label">🤖 Bot</div>
+        <div class="score-value score-bot" id="botScoreVal">0</div>
+      </div>
+    </div>
+
+    <!-- Frage -->
+    <div class="question-card">
+      <div class="question-meta" id="questionMeta"></div>
+      <div class="question-text" id="questionText">Lade...</div>
+      <div class="answers-grid" id="answersGrid"></div>
+    </div>
+
+    <!-- Feedback -->
+    <div class="feedback" id="feedback"></div>
+
+  </div>
+
+  <div class="page" id="resultPage">
+    <div class="result-card">
+      <div class="result-title" id="resultTitle">Ergebnis</div>
+
+      <div class="result-row">
+        <span class="result-key">Dein Score</span>
+        <span class="result-val score-player" id="resPlayerScore">0</span>
+      </div>
+      <div class="result-row">
+        <span class="result-key">Bot Score</span>
+        <span class="result-val score-bot" id="resBotScore">0</span>
+      </div>
+      <div class="result-row">
+        <span class="result-key">Richtig beantwortet</span>
+        <span class="result-val" id="resCorrect">0 / 0</span>
+      </div>
+      <div class="result-row">
+        <span class="result-key">Genauigkeit</span>
+        <span class="result-val" id="resAccuracy">0%</span>
+      </div>
+      <div class="result-row">
+        <span class="result-key">Schwierigkeit</span>
+        <span class="result-val" id="resDiff">-</span>
+      </div>
+      <div class="result-row">
+        <span class="result-key">Kategorie</span>
+        <span class="result-val" id="resCategory">-</span>
+      </div>
+
+      <div class="result-actions">
+        <button class="btn btn-primary" onclick="startGame()">Nochmal</button>
+        <button class="btn btn-secondary" onclick="showPage('menuPage')">← Menü</button>
+        <button class="btn btn-outline" onclick="loadProfile()">Profil</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== PROFIL ========== -->
+  <div class="page" id="profilePage">
+    <div class="profile-header">
+      <div class="profile-avatar"></div>
+      <div>
+        <div class="profile-name" id="profileName">-</div>
+        <div style="color: #888; font-size: 0.85rem;">Spielerprofil</div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" style="color: #e94560;" id="profileAccuracy">0%</div>
+        <div class="stat-label">Genauigkeit</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="profileGames">0</div>
+        <div class="stat-label">Spiele gesamt</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color: #00c896;" id="profileWinsEasy">0</div>
+        <div class="stat-label">Siege Leicht</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color: #ffb400;" id="profileWinsMedium">0</div>
+        <div class="stat-label">Siege Medium</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color: #e94560;" id="profileWinsHard">0</div>
+        <div class="stat-label">Siege Schwer</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="profileAnswers" style="font-size: 1.3rem;">0 / 0</div>
+        <div class="stat-label">Richtige Antworten</div>
+      </div>
+    </div>
+
+    <button class="btn btn-secondary" onclick="showPage('menuPage')">← Zurück</button>
+  </div>
+
+  <!-- ========== UPLOAD / DOWNLOAD ========== -->
+  <div class="page" id="uploadPage">
+    <h2>Fragen Up / Download</h2>
+
+    <h3>Format</h3>
+    <div class="format-info">
+      Q: Deine Frage<br>
+      T: Richtige Antwort<br>
+      F: Falsche Antwort 1<br>
+      F: Falsche Antwort 2<br>
+      F: Falsche Antwort 3<br>
+      <br>
+      Q: Nächste Frage<br>
+      T: Richtige Antwort<br>
+      F: ...
+    </div>
+    <p style="color: #666; font-size: 0.85rem; margin-bottom: 24px;">
+      T = True (richtig), F = False (falsch). Leerzeile zwischen Fragen.
+    </p>
+
+    <!-- Upload -->
+    <h3>Fragen hochladen</h3>
+    <div class="form-group">
+      <label>Kategorie</label>
+      <input type="text" id="uploadCategory" placeholder="z.B. Geschichte" />
+    </div>
+    <div class="form-group">
+      <label>Fragen (im Format oben)</label>
+      <textarea id="uploadText" rows="8" placeholder="Q: Frage&#10;T: Richtige Antwort&#10;F: Falsche Antwort&#10;..."></textarea>
+    </div>
+    <button class="btn btn-primary" onclick="uploadQuestions()">⬆ Hochladen</button>
+
+    <hr style="border-color: #0f3460; margin: 28px 0;" />
+
+    <!-- Download -->
+    <h3>Fragen herunterladen</h3>
+    <div class="form-group">
+      <label>Kategorie</label>
+      <input type="text" id="downloadCategory" placeholder="z.B. IT" />
+    </div>
+    <button class="btn btn-secondary" onclick="downloadQuestions()">⬇ Herunterladen</button>
+
+    <br /><br />
+    <button class="btn btn-outline" onclick="showPage('menuPage')">← Zurück</button>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

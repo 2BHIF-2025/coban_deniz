@@ -1,0 +1,228 @@
+{
+  "IT": [
+    {
+      "id": "it1",
+      "question": "Was bedeutet HTML?",
+      "answers": [
+        { "text": "HyperText Markup Language", "correct": true },
+        { "text": "High Tech Modern Language", "correct": false },
+        { "text": "HyperText Modern Links", "correct": false },
+        { "text": "Hyperlink and Text Markup Language", "correct": false }
+      ]
+    },
+    {
+      "id": "it2",
+      "question": "Was ist eine Variable?",
+      "answers": [
+        { "text": "Ein benannter Speicherplatz für Daten", "correct": true },
+        { "text": "Eine mathematische Formel", "correct": false },
+        { "text": "Ein Fehler im Code", "correct": false },
+        { "text": "Eine Art Schleife", "correct": false }
+      ]
+    },
+    {
+      "id": "it3",
+      "question": "Was macht eine for-Schleife?",
+      "answers": [
+        { "text": "Wiederholt Code eine bestimmte Anzahl von Malen", "correct": true },
+        { "text": "Führt Code nur einmal aus", "correct": false },
+        { "text": "Überprüft eine Bedingung", "correct": false },
+        { "text": "Löscht eine Variable", "correct": false }
+      ]
+    },
+    {
+      "id": "it4",
+      "question": "Was ist CSS hauptsächlich zuständig für?",
+      "answers": [
+        { "text": "Das Design und Layout einer Webseite", "correct": true },
+        { "text": "Die Logik einer Webseite", "correct": false },
+        { "text": "Die Datenbankanbindung", "correct": false },
+        { "text": "Den Servercode", "correct": false }
+      ]
+    },
+    {
+      "id": "it5",
+      "question": "Was ist eine IP-Adresse?",
+      "answers": [
+        { "text": "Eine eindeutige Adresse eines Geräts im Netzwerk", "correct": true },
+        { "text": "Ein WLAN-Passwort", "correct": false },
+        { "text": "Eine Art Computervirus", "correct": false },
+        { "text": "Ein Betriebssystem", "correct": false }
+      ]
+    },
+    {
+      "id": "it6",
+      "question": "Was bedeutet REST in der Webentwicklung?",
+      "answers": [
+        { "text": "Representational State Transfer", "correct": true },
+        { "text": "Remote Server Transfer", "correct": false },
+        { "text": "Rapid Exchange Standard Transfer", "correct": false },
+        { "text": "Resource Entity State Transmission", "correct": false }
+      ]
+    },
+    {
+      "id": "it7",
+      "question": "Was ist ein Array?",
+      "answers": [
+        { "text": "Eine geordnete Liste von Elementen", "correct": true },
+        { "text": "Eine einzelne Variable", "correct": false },
+        { "text": "Ein Datenbanktyp", "correct": false },
+        { "text": "Eine Funktion", "correct": false }
+      ]
+    },
+    {
+      "id": "it8",
+      "question": "Welches Keyword erstellt eine Konstante in JavaScript?",
+      "answers": [
+        { "text": "const", "correct": true },
+        { "text": "var", "correct": false },
+        { "text": "let", "correct": false },
+        { "text": "fix", "correct": false }
+      ]
+    }
+  ],
+  "Schule": [
+    {
+      "id": "sch1",
+      "question": "Was ist die Hauptstadt von Österreich?",
+      "answers": [
+        { "text": "Wien", "correct": true },
+        { "text": "Graz", "correct": false },
+        { "text": "Salzburg", "correct": false },
+        { "text": "Linz", "correct": false }
+      ]
+    },
+    {
+      "id": "sch2",
+      "question": "Wer schrieb Faust?",
+      "answers": [
+        { "text": "Johann Wolfgang von Goethe", "correct": true },
+        { "text": "Friedrich Schiller", "correct": false },
+        { "text": "Franz Kafka", "correct": false },
+        { "text": "Bertolt Brecht", "correct": false }
+      ]
+    },
+    {
+      "id": "sch3",
+      "question": "Was ist H₂O?",
+      "answers": [
+        { "text": "Wasser", "correct": true },
+        { "text": "Sauerstoff", "correct": false },
+        { "text": "Wasserstoff", "correct": false },
+        { "text": "Helium", "correct": false }
+      ]
+    },
+    {
+      "id": "sch4",
+      "question": "Wie viele Planeten hat unser Sonnensystem?",
+      "answers": [
+        { "text": "8", "correct": true },
+        { "text": "9", "correct": false },
+        { "text": "7", "correct": false },
+        { "text": "10", "correct": false }
+      ]
+    },
+    {
+      "id": "sch5",
+      "question": "Was ist die Formel für die Fläche eines Rechtecks?",
+      "answers": [
+        { "text": "Länge × Breite", "correct": true },
+        { "text": "Länge + Breite", "correct": false },
+        { "text": "2 × (Länge + Breite)", "correct": false },
+        { "text": "Länge²", "correct": false }
+      ]
+    },
+    {
+      "id": "sch6",
+      "question": "In welchem Jahr begann der Erste Weltkrieg?",
+      "answers": [
+        { "text": "1914", "correct": true },
+        { "text": "1918", "correct": false },
+        { "text": "1939", "correct": false },
+        { "text": "1900", "correct": false }
+      ]
+    },
+    {
+      "id": "sch7",
+      "question": "Welches chemische Symbol hat Eisen?",
+      "answers": [
+        { "text": "Fe", "correct": true },
+        { "text": "Ei", "correct": false },
+        { "text": "Au", "correct": false },
+        { "text": "Ir", "correct": false }
+      ]
+    },
+    {
+      "id": "sch8",
+      "question": "Was ist die Lichtgeschwindigkeit (ungefähr)?",
+      "answers": [
+        { "text": "300.000 km/s", "correct": true },
+        { "text": "150.000 km/s", "correct": false },
+        { "text": "500.000 km/s", "correct": false },
+        { "text": "1.000.000 km/s", "correct": false }
+      ]
+    }
+  ],
+  "Mathe": [
+    {
+      "id": "ma1",
+      "question": "Was ist 7 × 8?",
+      "answers": [
+        { "text": "56", "correct": true },
+        { "text": "54", "correct": false },
+        { "text": "58", "correct": false },
+        { "text": "48", "correct": false }
+      ]
+    },
+    {
+      "id": "ma2",
+      "question": "Was ist die Wurzel aus 144?",
+      "answers": [
+        { "text": "12", "correct": true },
+        { "text": "14", "correct": false },
+        { "text": "11", "correct": false },
+        { "text": "13", "correct": false }
+      ]
+    },
+    {
+      "id": "ma3",
+      "question": "Was ist 15% von 200?",
+      "answers": [
+        { "text": "30", "correct": true },
+        { "text": "25", "correct": false },
+        { "text": "35", "correct": false },
+        { "text": "20", "correct": false }
+      ]
+    },
+    {
+      "id": "ma4",
+      "question": "Was ist der Pythagoras-Satz?",
+      "answers": [
+        { "text": "a² + b² = c²", "correct": true },
+        { "text": "a + b = c", "correct": false },
+        { "text": "a² - b² = c²", "correct": false },
+        { "text": "a × b = c²", "correct": false }
+      ]
+    },
+    {
+      "id": "ma5",
+      "question": "Was ist π (Pi) ungefähr?",
+      "answers": [
+        { "text": "3.14159", "correct": true },
+        { "text": "2.71828", "correct": false },
+        { "text": "1.61803", "correct": false },
+        { "text": "3.41159", "correct": false }
+      ]
+    },
+    {
+      "id": "ma6",
+      "question": "Was ergibt 2³?",
+      "answers": [
+        { "text": "8", "correct": true },
+        { "text": "6", "correct": false },
+        { "text": "9", "correct": false },
+        { "text": "16", "correct": false }
+      ]
+    }
+  ]
+}
