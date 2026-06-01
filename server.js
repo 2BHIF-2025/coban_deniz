@@ -10,7 +10,30 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Hilfsfunktionen zum Lesen/Schreiben der JSON-Dateien
 function readUsers() {
-  return JSON.parse(fs.readFileSync('./data/users.json', 'utf-8'));
+  const users = JSON.parse(fs.readFileSync('./data/users.json', 'utf-8'));
+
+  // Falls alte Userdaten noch keine games-Werte haben
+  for (const name in users) {
+    if (!users[name].wins) users[name].wins = { easy: 0, medium: 0, hard: 0, impossible: 0 };
+    if (!users[name].losses) users[name].losses = { easy: 0, medium: 0, hard: 0, impossible: 0 };
+    if (users[name].wins.impossible === undefined) users[name].wins.impossible = 0;
+    if (users[name].losses.impossible === undefined) users[name].losses.impossible = 0;
+
+    if (!users[name].games) {
+      const wins = users[name].wins || { easy: 0, medium: 0, hard: 0 };
+      const losses = users[name].losses || { easy: 0, medium: 0, hard: 0 };
+
+      users[name].games = {
+        easy: (wins.easy || 0) + (losses.easy || 0),
+        medium: (wins.medium || 0) + (losses.medium || 0),
+        hard: (wins.hard || 0) + (losses.hard || 0),
+        impossible: (wins.impossible || 0) + (losses.impossible || 0)
+      };
+    }
+    if (users[name].games.impossible === undefined) users[name].games.impossible = 0;
+  }
+
+  return users;
 }
 function saveUsers(data) {
   fs.writeFileSync('./data/users.json', JSON.stringify(data, null, 2));
@@ -40,8 +63,9 @@ app.post('/api/login', (req, res) => {
       gamesPlayed: 0,
       totalQuestions: 0,
       correctAnswers: 0,
-      wins: { easy: 0, medium: 0, hard: 0 },
-      losses: { easy: 0, medium: 0, hard: 0 }
+      games: { easy: 0, medium: 0, hard: 0, impossible: 0 },
+      wins: { easy: 0, medium: 0, hard: 0, impossible: 0 },
+      losses: { easy: 0, medium: 0, hard: 0, impossible: 0 }
     };
     saveUsers(users);
   }
@@ -49,7 +73,6 @@ app.post('/api/login', (req, res) => {
   res.json(users[username]);
 });
 
-// Profil abrufen
 app.get('/api/profile/:username', (req, res) => {
   const users = readUsers();
   const user = users[req.params.username];
@@ -58,7 +81,6 @@ app.get('/api/profile/:username', (req, res) => {
     return res.status(404).json({ error: 'User nicht gefunden' });
   }
 
-  // Accuracy berechnen: richtige / gesamt * 100
   const accuracy = user.totalQuestions > 0
     ? ((user.correctAnswers / user.totalQuestions) * 100).toFixed(1)
     : 0;
@@ -77,6 +99,7 @@ app.post('/api/stats', (req, res) => {
   users[username].gamesPlayed += 1;
   users[username].totalQuestions += total;
   users[username].correctAnswers += correct;
+  users[username].games[difficulty] += 1;
 
   if (won) {
     users[username].wins[difficulty] += 1;
@@ -94,7 +117,24 @@ app.get('/api/categories', (req, res) => {
   res.json(Object.keys(questions));
 });
 
-// Fragen einer Kategorie (gemischt)
+app.post('/api/categories', (req, res) => {
+  const { category } = req.body;
+
+  if (!category || category.trim() === '') {
+    return res.status(400).json({ error: 'Kategorie fehlt' });
+  }
+
+  const cleanCategory = category.trim();
+  const questions = readQuestions();
+
+  if (!questions[cleanCategory]) {
+    questions[cleanCategory] = [];
+    saveQuestions(questions);
+  }
+
+  res.json({ ok: true, category: cleanCategory });
+});
+
 app.get('/api/questions/:category', (req, res) => {
   const questions = readQuestions();
   const category = req.params.category;
@@ -103,12 +143,10 @@ app.get('/api/questions/:category', (req, res) => {
     return res.status(404).json({ error: 'Kategorie nicht gefunden' });
   }
 
-  // Shuffle
   const shuffled = [...questions[category]].sort(() => Math.random() - 0.5);
   res.json(shuffled);
 });
 
-// Fragen hochladen (txt Format parsen)
 app.post('/api/questions/upload', (req, res) => {
   const { category, text } = req.body;
 
@@ -116,9 +154,8 @@ app.post('/api/questions/upload', (req, res) => {
     return res.status(400).json({ error: 'Kategorie und Text fehlen' });
   }
 
-  // Format parsen: Q: Frage / T: Richtig / F: Falsch
   const parsed = [];
-  const blocks = text.trim().split(/\n\s*\n/); // Blöcke durch Leerzeile trennen
+  const blocks = text.trim().split(/\n\s*\n/); 
 
   for (const block of blocks) {
     const lines = block.trim().split('\n').map(l => l.trim()).filter(l => l.length > 0);
@@ -153,7 +190,6 @@ app.post('/api/questions/upload', (req, res) => {
   res.json({ added: parsed.length });
 });
 
-// Fragen einer Kategorie als .txt herunterladen
 app.get('/api/questions/download/:category', (req, res) => {
   const questions = readQuestions();
   const category = req.params.category;

@@ -1,1 +1,50 @@
-"{}"
+{
+  "max99": {
+    "username": "max99",
+    "gamesPlayed": 0,
+    "totalQuestions": 0,
+    "correctAnswers": 0,
+    "games": {
+      "easy": 0,
+      "medium": 0,
+      "hard": 0,
+      "impossible": 0
+    },
+    "wins": {
+      "easy": 0,
+      "medium": 0,
+      "hard": 0,
+      "impossible": 0
+    },
+    "losses": {
+      "easy": 0,
+      "medium": 0,
+      "hard": 0,
+      "impossible": 0
+    }
+  },
+  "deniz": {
+    "username": "deniz",
+    "gamesPlayed": 2,
+    "totalQuestions": 16,
+    "correctAnswers": 12,
+    "games": {
+      "easy": 2,
+      "medium": 0,
+      "hard": 0,
+      "impossible": 0
+    },
+    "wins": {
+      "easy": 2,
+      "medium": 0,
+      "hard": 0,
+      "impossible": 0
+    },
+    "losses": {
+      "easy": 0,
+      "medium": 0,
+      "hard": 0,
+      "impossible": 0
+    }
+  }
+}

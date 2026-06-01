@@ -8,49 +8,60 @@
 </head>
 <body>
 
-  <!-- NAVBAR (versteckt bis Login) -->
   <nav class="navbar" id="navbar" style="display: none;">
-    <h1>🤖 QuizBattle</h1>
+    <h1>QuizBattle</h1>
     <span id="navUser"></span>
   </nav>
 
-  <!-- ========== LOGIN ========== -->
   <div class="page active" id="loginPage">
-    <div class="logo">🤖 QuizBattle</div>
-    <p class="subtitle">Kämpfe gegen den Bot!</p>
+    <div class="logo">QuizBattle</div>
+    <p class="subtitle">Teste dein Wissen gegen den Quiz-Bot.</p>
     <div class="card">
       <label for="usernameInput">Dein Username</label>
-      <input type="text" id="usernameInput" placeholder="z.B. max99" maxlength="20" autocomplete="off" />
-      <button class="btn btn-primary" onclick="login()">Einloggen →</button>
+      <input type="text" id="usernameInput" placeholder="z.B. deniz" maxlength="20" autocomplete="off" />
+      <button class="btn btn-primary" onclick="login()">Einloggen</button>
     </div>
   </div>
 
-  <!-- ========== MENÜ ========== -->
   <div class="page" id="menuPage">
-    <h2>Neues Spiel</h2>
-
-    <div class="section-label">1. Kategorie wählen</div>
-    <div class="category-grid" id="categoryGrid">
-      <!-- wird per JS gefüllt -->
+    <div class="top-box">
+      <h2>Neues Spiel</h2>
+      <p>Waehle eine Kategorie, stelle die Schwierigkeit ein und starte das Battle.</p>
     </div>
 
-    <div class="section-label">2. Schwierigkeit wählen</div>
+    <div class="section-label">1. Kategorie waehlen</div>
+    <div class="category-grid" id="categoryGrid"></div>
+
+    <div class="quick-category">
+      <label>Eigene Kategorie erstellen</label>
+      <div class="inline-form">
+        <input type="text" id="newCategoryInput" placeholder="z.B. Sport" maxlength="25" />
+        <button class="btn btn-secondary" onclick="createEmptyCategory()">Erstellen</button>
+      </div>
+      <textarea id="newCategoryQuestions" rows="5" placeholder="Optional direkt Fragen schreiben:&#10;Q: Frage&#10;T: Richtige Antwort&#10;F: Falsche Antwort&#10;F: Falsche Antwort&#10;F: Falsche Antwort"></textarea>
+      <small>Wenn du keine Fragen eingibst, wird nur die Kategorie erstellt.</small>
+    </div>
+
+    <div class="section-label">2. Schwierigkeit waehlen</div>
     <div class="difficulty-row">
       <button class="diff-btn diff-easy selected" onclick="selectDifficulty('easy', this)">
-        😊 Leicht<br><small>Bot 50%</small>
+        Leicht
       </button>
       <button class="diff-btn diff-medium" onclick="selectDifficulty('medium', this)">
-        😤 Medium<br><small>Bot 60%</small>
+        Medium
       </button>
       <button class="diff-btn diff-hard" onclick="selectDifficulty('hard', this)">
-        💀 Schwer<br><small>Bot 80%</small>
+        Schwer
+      </button>
+      <button class="diff-btn diff-impossible" onclick="selectDifficulty('impossible', this)">
+        Unmoeglich
       </button>
     </div>
 
     <div class="menu-actions">
-      <button class="btn btn-primary" onclick="startGame()">▶ Starten</button>
-      <button class="btn btn-secondary" onclick="loadProfile()">👤 Profil</button>
-      <button class="btn btn-outline" onclick="showPage('uploadPage')">📂 Fragen</button>
+      <button class="btn btn-primary" onclick="startGame()">Starten</button>
+      <button class="btn btn-secondary" onclick="loadProfile()">Profil</button>
+      <button class="btn btn-outline" onclick="showPage('uploadPage')">Fragen</button>
     </div>
   </div>
 
@@ -73,21 +84,19 @@
       </div>
 
       <div class="score-box" id="botScoreBox">
-        <div class="score-label">🤖 Bot</div>
+        <div class="score-label">Bot</div>
         <div class="score-value score-bot" id="botScoreVal">0</div>
       </div>
     </div>
 
-    <!-- Frage -->
     <div class="question-card">
       <div class="question-meta" id="questionMeta"></div>
       <div class="question-text" id="questionText">Lade...</div>
       <div class="answers-grid" id="answersGrid"></div>
     </div>
 
-    <!-- Feedback -->
+    <div class="round-info" id="roundInfo"></div>
     <div class="feedback" id="feedback"></div>
-
   </div>
 
   <div class="page" id="resultPage">
@@ -101,6 +110,10 @@
       <div class="result-row">
         <span class="result-key">Bot Score</span>
         <span class="result-val score-bot" id="resBotScore">0</span>
+      </div>
+      <div class="result-row">
+        <span class="result-key">Punkte Unterschied</span>
+        <span class="result-val" id="resDiffPoints">0</span>
       </div>
       <div class="result-row">
         <span class="result-key">Richtig beantwortet</span>
@@ -121,55 +134,68 @@
 
       <div class="result-actions">
         <button class="btn btn-primary" onclick="startGame()">Nochmal</button>
-        <button class="btn btn-secondary" onclick="showPage('menuPage')">← Menü</button>
+        <button class="btn btn-secondary" onclick="showPage('menuPage')">Menu</button>
         <button class="btn btn-outline" onclick="loadProfile()">Profil</button>
       </div>
     </div>
   </div>
 
-  <!-- ========== PROFIL ========== -->
   <div class="page" id="profilePage">
     <div class="profile-header">
-      <div class="profile-avatar"></div>
+      <div class="profile-avatar" id="profileAvatar">QB</div>
       <div>
         <div class="profile-name" id="profileName">-</div>
-        <div style="color: #888; font-size: 0.85rem;">Spielerprofil</div>
+        <div class="profile-subtitle">Spielerprofil</div>
       </div>
     </div>
 
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-value" style="color: #e94560;" id="profileAccuracy">0%</div>
-        <div class="stat-label">Genauigkeit</div>
+        <div class="stat-label">Accuracy</div>
       </div>
       <div class="stat-card">
         <div class="stat-value" id="profileGames">0</div>
         <div class="stat-label">Spiele gesamt</div>
       </div>
       <div class="stat-card">
+        <div class="stat-value" id="profileGamesEasy">0</div>
+        <div class="stat-label">Spiele Leicht</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="profileGamesMedium">0</div>
+        <div class="stat-label">Spiele Medium</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="profileGamesHard">0</div>
+        <div class="stat-label">Spiele Schwer</div>
+      </div>
+      <div class="stat-card">
         <div class="stat-value" style="color: #00c896;" id="profileWinsEasy">0</div>
-        <div class="stat-label">Siege Leicht</div>
+        <div class="stat-label">Wins Leicht</div>
       </div>
       <div class="stat-card">
         <div class="stat-value" style="color: #ffb400;" id="profileWinsMedium">0</div>
-        <div class="stat-label">Siege Medium</div>
+        <div class="stat-label">Wins Medium</div>
       </div>
       <div class="stat-card">
         <div class="stat-value" style="color: #e94560;" id="profileWinsHard">0</div>
-        <div class="stat-label">Siege Schwer</div>
+        <div class="stat-label">Wins Schwer</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card stat-wide">
         <div class="stat-value" id="profileAnswers" style="font-size: 1.3rem;">0 / 0</div>
         <div class="stat-label">Richtige Antworten</div>
       </div>
     </div>
 
-    <button class="btn btn-secondary" onclick="showPage('menuPage')">← Zurück</button>
+    <button class="btn btn-secondary" onclick="showPage('menuPage')">Zurueck</button>
   </div>
 
-  <!-- ========== UPLOAD / DOWNLOAD ========== -->
   <div class="page" id="uploadPage">
-    <h2>Fragen Up / Download</h2>
+    <div class="top-box">
+      <h2>Fragen Up / Download</h2>
+      <p>Hier kannst du eigene Quizfragen speichern oder Kategorien herunterladen.</p>
+    </div>
 
     <h3>Format</h3>
     <div class="format-info">
@@ -179,38 +205,36 @@
       F: Falsche Antwort 2<br>
       F: Falsche Antwort 3<br>
       <br>
-      Q: Nächste Frage<br>
+      Q: Naechste Frage<br>
       T: Richtige Antwort<br>
       F: ...
     </div>
-    <p style="color: #666; font-size: 0.85rem; margin-bottom: 24px;">
+    <p class="help-text">
       T = True (richtig), F = False (falsch). Leerzeile zwischen Fragen.
     </p>
 
-    <!-- Upload -->
     <h3>Fragen hochladen</h3>
     <div class="form-group">
       <label>Kategorie</label>
       <input type="text" id="uploadCategory" placeholder="z.B. Geschichte" />
     </div>
     <div class="form-group">
-      <label>Fragen (im Format oben)</label>
-      <textarea id="uploadText" rows="8" placeholder="Q: Frage&#10;T: Richtige Antwort&#10;F: Falsche Antwort&#10;..."></textarea>
+      <label>Fragen im Format oben</label>
+      <textarea id="uploadText" rows="8" placeholder="Q: Frage&#10;T: Richtige Antwort&#10;F: Falsche Antwort&#10;F: Falsche Antwort&#10;F: Falsche Antwort"></textarea>
     </div>
-    <button class="btn btn-primary" onclick="uploadQuestions()">⬆ Hochladen</button>
+    <button class="btn btn-primary" onclick="uploadQuestions()">Hochladen</button>
 
-    <hr style="border-color: #0f3460; margin: 28px 0;" />
+    <hr />
 
-    <!-- Download -->
     <h3>Fragen herunterladen</h3>
     <div class="form-group">
       <label>Kategorie</label>
       <input type="text" id="downloadCategory" placeholder="z.B. IT" />
     </div>
-    <button class="btn btn-secondary" onclick="downloadQuestions()">⬇ Herunterladen</button>
+    <button class="btn btn-secondary" onclick="downloadQuestions()">Herunterladen</button>
 
     <br /><br />
-    <button class="btn btn-outline" onclick="showPage('menuPage')">← Zurück</button>
+    <button class="btn btn-outline" onclick="showPage('menuPage')">Zurueck</button>
   </div>
 
   <script src="app.js"></script>

@@ -1,7 +1,5 @@
-// Aktueller eingeloggter User
 let currentUser = null;
 
-// Spielzustand
 let questions = [];
 let currentIndex = 0;
 let playerScore = 0;
@@ -13,20 +11,18 @@ let timerInterval = null;
 let timeLeft = 10;
 let alreadyAnswered = false;
 
-// Bot Schwierigkeit: Schwellwert ab dem der Bot richtig antwortet (1-10, roll >= threshold)
 const diffConfig = {
-  easy:   { label: 'Leicht', threshold: 6 },  // 50% (6,7,8,9,10 = 5 von 10)
-  medium: { label: 'Medium', threshold: 5 },  // 60% (5..10 = 6 von 10)
-  hard:   { label: 'Schwer', threshold: 3 },  // 80% (3..10 = 8 von 10)
+  easy: { label: 'Leicht', chance: 50 },
+  medium: { label: 'Medium', chance: 60 },
+  hard: { label: 'Schwer', chance: 80 },
+  impossible: { label: 'Unmoeglich', chance: 90 }
 };
 
-// ---- SEITEN WECHSELN ----
 function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
-// ---- LOGIN ----
 async function login() {
   const username = document.getElementById('usernameInput').value.trim();
   if (!username) {
@@ -49,11 +45,10 @@ async function login() {
   document.getElementById('navUser').textContent = 'Eingeloggt als: ' + currentUser.username;
   document.getElementById('navbar').style.display = 'flex';
 
-  loadCategories();
+  await loadCategories();
   showPage('menuPage');
 }
 
-// ---- MENU ----
 async function loadCategories() {
   const res = await fetch('/api/categories');
   const cats = await res.json();
@@ -65,11 +60,17 @@ async function loadCategories() {
     const btn = document.createElement('button');
     btn.className = 'category-btn';
     btn.textContent = cat;
+
+    if (cat === selectedCategory) {
+      btn.classList.add('selected');
+    }
+
     btn.onclick = () => {
       selectedCategory = cat;
       document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
     };
+
     grid.appendChild(btn);
   });
 }
@@ -80,19 +81,58 @@ function selectDifficulty(diff, btn) {
   btn.classList.add('selected');
 }
 
-async function startGame() {
-  if (!selectedCategory) {
-    alert('Bitte eine Kategorie wählen!');
+async function createEmptyCategory() {
+  const input = document.getElementById('newCategoryInput');
+  const questionsInput = document.getElementById('newCategoryQuestions');
+  const category = input.value.trim();
+  const text = questionsInput.value.trim();
+
+  if (!category) {
+    alert('Bitte einen Kategorienamen eingeben!');
     return;
   }
 
-  const res = await fetch('/api/questions/' + selectedCategory);
+  const url = text ? '/api/questions/upload' : '/api/categories';
+  const body = text ? { category, text } : { category };
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    alert('Fehler: ' + data.error);
+    return;
+  }
+
+  selectedCategory = category;
+  input.value = '';
+  questionsInput.value = '';
+  await loadCategories();
+}
+
+async function startGame() {
+  if (!selectedCategory) {
+    alert('Bitte eine Kategorie waehlen!');
+    return;
+  }
+
+  const res = await fetch('/api/questions/' + encodeURIComponent(selectedCategory));
   if (!res.ok) {
     alert('Fehler beim Laden der Fragen');
     return;
   }
 
   questions = await res.json();
+  if (questions.length === 0) {
+    alert('Diese Kategorie hat noch keine Fragen. Lade zuerst Fragen hoch.');
+    showPage('uploadPage');
+    document.getElementById('uploadCategory').value = selectedCategory;
+    return;
+  }
+
   currentIndex = 0;
   playerScore = 0;
   botScore = 0;
@@ -102,7 +142,6 @@ async function startGame() {
   renderQuestion();
 }
 
-// ---- GAME ----
 function renderQuestion() {
   if (currentIndex >= questions.length) {
     endGame();
@@ -113,17 +152,12 @@ function renderQuestion() {
   const q = questions[currentIndex];
   const total = questions.length;
 
-  // Progress Bar
   document.getElementById('progressFill').style.width = (currentIndex / total * 100) + '%';
-
-  // Meta
   document.getElementById('questionMeta').textContent =
-    `Frage ${currentIndex + 1} / ${total}  •  ${selectedCategory}  •  ${diffConfig[selectedDifficulty].label}`;
+    'Frage ' + (currentIndex + 1) + ' / ' + total + ' - ' + selectedCategory + ' - ' + diffConfig[selectedDifficulty].label;
 
-  // Frage
   document.getElementById('questionText').textContent = q.question;
 
-  // Antworten shufflen und anzeigen
   const shuffled = [...q.answers].sort(() => Math.random() - 0.5);
   const letters = ['A', 'B', 'C', 'D'];
   const grid = document.getElementById('answersGrid');
@@ -133,21 +167,19 @@ function renderQuestion() {
     const btn = document.createElement('button');
     btn.className = 'answer-btn';
     btn.dataset.correct = ans.correct;
-    btn.innerHTML = `<span class="answer-letter">${letters[i]}</span>${ans.text}`;
+    btn.innerHTML = '<span class="answer-letter">' + letters[i] + '</span><span>' + ans.text + '</span>';
     btn.onclick = () => handleAnswer(btn, shuffled);
     grid.appendChild(btn);
   });
 
-  // Scores
   document.getElementById('playerScoreVal').textContent = playerScore;
   document.getElementById('botScoreVal').textContent = botScore;
+  document.getElementById('roundInfo').textContent = '';
 
-  // Feedback verstecken
   const fb = document.getElementById('feedback');
   fb.className = 'feedback';
   fb.textContent = '';
 
-  // Timer starten
   startTimer(shuffled);
 }
 
@@ -163,7 +195,6 @@ function startTimer(shuffledAnswers) {
     if (timeLeft <= 0) {
       clearInterval(timerInterval);
       if (!alreadyAnswered) {
-        // Zeit abgelaufen = falsch
         handleAnswer(null, shuffledAnswers);
       }
     }
@@ -174,7 +205,6 @@ function updateTimerUI() {
   document.getElementById('timerNum').textContent = timeLeft;
   document.getElementById('timerFill').style.width = (timeLeft / 10 * 100) + '%';
 
-  // Farbe wechseln wenn wenig Zeit
   const fill = document.getElementById('timerFill');
   if (timeLeft <= 3) {
     fill.style.background = '#e94560';
@@ -191,17 +221,16 @@ function handleAnswer(clickedBtn, shuffledAnswers) {
   clearInterval(timerInterval);
 
   const playerRight = clickedBtn !== null && clickedBtn.dataset.correct === 'true';
-  const botRight = botDecide();
+  const bot = botDecide(shuffledAnswers);
+  const botRight = bot.correct;
 
-  // Punkte: 100 Basispunkte + Zeitbonus (wie Kahoot)
   const pPoints = playerRight ? 100 + timeLeft * 10 : 0;
-  const bPoints = botRight   ? 100 + Math.floor(Math.random() * 50) : 0;
+  const bPoints = botRight ? 100 + Math.floor(Math.random() * 50) : 0;
 
   playerScore += pPoints;
-  botScore    += bPoints;
+  botScore += bPoints;
   if (playerRight) playerCorrect++;
 
-  // Antworten einfärben
   document.querySelectorAll('.answer-btn').forEach(btn => {
     btn.disabled = true;
     if (btn.dataset.correct === 'true') {
@@ -211,37 +240,47 @@ function handleAnswer(clickedBtn, shuffledAnswers) {
     }
   });
 
-  // Score Update + Popup anzeigen
   document.getElementById('playerScoreVal').textContent = playerScore;
-  document.getElementById('botScoreVal').textContent    = botScore;
+  document.getElementById('botScoreVal').textContent = botScore;
 
   if (pPoints > 0) showPointsPopup('+' + pPoints, '#00c896', 'playerScoreBox');
   if (bPoints > 0) showPointsPopup('+' + bPoints, '#e94560', 'botScoreBox');
 
-  // Feedback
+  const difference = playerScore - botScore;
+  const diffText = difference >= 0 ? '+' + difference : difference;
+  document.getElementById('roundInfo').textContent =
+    'Bot Antwort: ' + bot.answer.text + ' | Punkte Unterschied: ' + diffText;
+
   const fb = document.getElementById('feedback');
   if (clickedBtn === null) {
-    fb.textContent = '⏱ Zeit abgelaufen!';
+    fb.textContent = 'Zeit abgelaufen!';
     fb.className = 'feedback wrong show';
   } else if (playerRight) {
-    fb.textContent = '✅ Richtig!';
+    fb.textContent = 'Richtig!';
     fb.className = 'feedback correct show';
   } else {
-    fb.textContent = '❌ Falsch!';
+    fb.textContent = 'Falsch!';
     fb.className = 'feedback wrong show';
   }
 
-  // 2 Sekunden warten dann nächste Frage
   setTimeout(() => {
     currentIndex++;
     renderQuestion();
-  }, 2000);
+  }, 2200);
 }
 
-function botDecide() {
-  // Zufallszahl 1-10, ab Schwellwert = richtig
-  const roll = Math.floor(Math.random() * 10) + 1;
-  return roll >= diffConfig[selectedDifficulty].threshold;
+function botDecide(shuffledAnswers) {
+  const chance = diffConfig[selectedDifficulty].chance;
+  const roll = Math.floor(Math.random() * 100) + 1;
+  const correctAnswer = shuffledAnswers.find(a => a.correct);
+
+  if (roll <= chance) {
+    return { correct: true, answer: correctAnswer };
+  }
+
+  const wrongAnswers = shuffledAnswers.filter(a => !a.correct);
+  const randomWrong = wrongAnswers[Math.floor(Math.random() * wrongAnswers.length)];
+  return { correct: false, answer: randomWrong || correctAnswer };
 }
 
 function showPointsPopup(text, color, boxId) {
@@ -251,17 +290,15 @@ function showPointsPopup(text, color, boxId) {
   el.textContent = text;
   el.style.color = color;
   el.style.left = (box.left + box.width / 2 - 20) + 'px';
-  el.style.top  = (box.top - 10 + window.scrollY) + 'px';
+  el.style.top = (box.top - 10 + window.scrollY) + 'px';
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 1300);
 }
 
-// ---- ENDE ----
 async function endGame() {
   const won = playerScore > botScore;
   const total = questions.length;
 
-  // Stats an Server schicken
   await fetch('/api/stats', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -274,24 +311,25 @@ async function endGame() {
     })
   });
 
-  // Ergebnis anzeigen
   const accuracy = total > 0 ? Math.round(playerCorrect / total * 100) : 0;
+  const diff = playerScore - botScore;
 
-  document.getElementById('resultTitle').textContent = won ? '🏆 Gewonnen!' : '💀 Verloren!';
+  document.getElementById('resultTitle').textContent = won ? 'Gewonnen!' : 'Verloren!';
   document.getElementById('resultTitle').style.color = won ? '#00c896' : '#e94560';
   document.getElementById('resPlayerScore').textContent = playerScore;
-  document.getElementById('resBotScore').textContent    = botScore;
-  document.getElementById('resCorrect').textContent     = playerCorrect + ' / ' + total;
-  document.getElementById('resAccuracy').textContent    = accuracy + '%';
-  document.getElementById('resDiff').textContent        = diffConfig[selectedDifficulty].label;
-  document.getElementById('resCategory').textContent    = selectedCategory;
+  document.getElementById('resBotScore').textContent = botScore;
+  document.getElementById('resDiffPoints').textContent = diff >= 0 ? '+' + diff : diff;
+  document.getElementById('resCorrect').textContent = playerCorrect + ' / ' + total;
+  document.getElementById('resAccuracy').textContent = accuracy + '%';
+  document.getElementById('resDiff').textContent = diffConfig[selectedDifficulty].label;
+  document.getElementById('resCategory').textContent = selectedCategory;
+  document.getElementById('progressFill').style.width = '100%';
 
   showPage('resultPage');
 }
 
-// ---- PROFIL ----
 async function loadProfile() {
-  const res = await fetch('/api/profile/' + currentUser.username);
+  const res = await fetch('/api/profile/' + encodeURIComponent(currentUser.username));
   if (!res.ok) {
     alert('Profil laden fehlgeschlagen');
     return;
@@ -299,22 +337,24 @@ async function loadProfile() {
 
   const u = await res.json();
 
-  document.getElementById('profileName').textContent     = u.username;
+  document.getElementById('profileName').textContent = u.username;
+  document.getElementById('profileAvatar').textContent = u.username.substring(0, 2).toUpperCase();
   document.getElementById('profileAccuracy').textContent = u.accuracy + '%';
-  document.getElementById('profileGames').textContent    = u.gamesPlayed;
-  document.getElementById('profileWinsEasy').textContent   = u.wins.easy;
+  document.getElementById('profileGames').textContent = u.gamesPlayed;
+  document.getElementById('profileGamesEasy').textContent = u.games.easy;
+  document.getElementById('profileGamesMedium').textContent = u.games.medium;
+  document.getElementById('profileGamesHard').textContent = u.games.hard;
+  document.getElementById('profileWinsEasy').textContent = u.wins.easy;
   document.getElementById('profileWinsMedium').textContent = u.wins.medium;
-  document.getElementById('profileWinsHard').textContent   = u.wins.hard;
-  document.getElementById('profileAnswers').textContent =
-    u.correctAnswers + ' / ' + u.totalQuestions;
+  document.getElementById('profileWinsHard').textContent = u.wins.hard;
+  document.getElementById('profileAnswers').textContent = u.correctAnswers + ' / ' + u.totalQuestions;
 
   showPage('profilePage');
 }
 
-// ---- UPLOAD ----
 async function uploadQuestions() {
   const category = document.getElementById('uploadCategory').value.trim();
-  const text     = document.getElementById('uploadText').value.trim();
+  const text = document.getElementById('uploadText').value.trim();
 
   if (!category || !text) {
     alert('Bitte Kategorie und Fragen eingeben!');
@@ -335,9 +375,11 @@ async function uploadQuestions() {
   }
 
   alert(data.added + ' Fragen erfolgreich hochgeladen!');
+  selectedCategory = category;
   document.getElementById('uploadCategory').value = '';
   document.getElementById('uploadText').value = '';
-  loadCategories(); // Kategorien neu laden
+  await loadCategories();
+  showPage('menuPage');
 }
 
 function downloadQuestions() {
@@ -346,10 +388,10 @@ function downloadQuestions() {
     alert('Bitte Kategorie eingeben!');
     return;
   }
+
   window.open('/api/questions/download/' + encodeURIComponent(category), '_blank');
 }
 
-// Enter zum Einloggen
 document.getElementById('usernameInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') login();
 });
