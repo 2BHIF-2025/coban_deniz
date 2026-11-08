@@ -1,8 +1,18 @@
 # coban_deniz
-Ein Quiz battle gegen ein Roboter. Man kann sich für paar kategorien entscheiden(IT, schule,..) oder user kann eine kategorie machen. der bot hat 3 schwierigkeitslevel: leicht(50% erfolgschance)
-medium(60%) und schwer(80%) mit score einzeige nach jeder frage und timer von 10 sekunden jeder aufgabe. Man soll fragen up und downloaden können und es soll in diesem
-konzept sein: Q: Frage A: T(für true): Answer1 F(für false): Answer2 F: Answer 3 F: Answer4
-wie bei kahoot soll nach jeder Frage so Punkte unterschied gemessen werden. und diese bei bor 3 schwierigkeiten soll es einfach random rand machen also eine zufällige zahl zwischen 1 und 10 und z.B bei
-60% soll es bei 60-100 halt richtig beantworten sonst irgendeine random antwort. und man soll so auf sein profil gehen können worin folgende daten angezeigt werden: Username,
-Accuraccy(bei jeder frage soll es halt ausgerechnet werden indem man insgesamte fragen speichert und richtige und halt p = A/G * 100.) wins bei schwer, wins bei medium und easy und spiele gegen diese.
+**Quizbattle gegen einen Roboter**
 
+Man spielt ein Quiz gegen einen Bot und kann sich vorher eine Kategorie aussuchen, zum Beispiel IT oder Schule. Wer will, kann auch eine eigene Kategorie erstellen.
+
+Der Bot hat drei Schwierigkeitsstufen: leicht (50 % Trefferquote), mittel (60 %) und schwer (80 %). Dafür zieht er bei jeder Frage eine Zufallszahl zwischen 1 und 100. Liegt sie unter oder bei der jeweiligen Prozentzahl, antwortet er richtig, sonst nimmt er irgendeine zufällige Antwort. Für jede Frage gibt es einen Timer von 10 Sekunden, und nach jeder Frage wird der aktuelle Punktestand angezeigt. Wie bei Kahoot sieht man dabei auch den Punkteunterschied zwischen Spieler und Bot.
+
+Fragen kann man hoch- und herunterladen. Das Format sieht so aus:
+
+`Q: Frage A: T: Antwort1 F: Antwort2 F: Antwort3 F: Antwort4`
+
+(T steht für die richtige Antwort, F für die falschen.)
+
+Im Profil gibt es folgende Infos:
+- Username
+- Accuracy: Dafür werden alle beantworteten und alle richtig beantworteten Fragen mitgezählt. Die Formel ist p = A / G · 100 (A = richtige Antworten, G = Gesamtzahl der Fragen).
+- Siege auf leicht, mittel und schwer
+- Anzahl der Spiele gegen den Bot
